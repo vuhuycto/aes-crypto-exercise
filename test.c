@@ -11,6 +11,8 @@
 
 #include "aes.h"
 
+uint8_t len = 0;
+
 static void phex(uint8_t *str);
 static void test_ecb_verbose(uint8_t *plaintext, uint8_t *key);
 
@@ -18,10 +20,13 @@ int main(void)
 {
 
 #ifdef AES128
+  len = 16;
   printf("\nTesting AES128\n\n");
 #elif defined(AES192)
+  len = 24;
   printf("\nTesting AES192\n\n");
 #elif defined(AES256)
+  len = 32;
   printf("\nTesting AES256\n\n");
 #else
   printf("You need to specify a symbol between AES128, AES192 or AES256. Exiting");
@@ -30,23 +35,23 @@ int main(void)
   char *s;
 
   printf("Input Text: ");
-  s = malloc(16 * sizeof(char));
+  s = malloc(len * sizeof(char));
   scanf("%[^\n]", s);
   s = realloc(s, strlen(s) + 1);
 
   getchar();
 
   char *k;
-  printf("Input Text: ");
-  k = malloc(16 * sizeof(char));
+  printf("Key: ");
+  k = malloc(len * sizeof(char));
   scanf("%[^\n]", k);
   k = realloc(k, strlen(k) + 1);
   printf("\n\n********************************************\n");
 
-  uint8_t *plaintext = (uint8_t *)malloc(16 * sizeof(uint8_t));
-  uint8_t *key = (uint8_t *)malloc(16 * sizeof(uint8_t));
+  uint8_t *plaintext = (uint8_t *)malloc(len * sizeof(uint8_t));
+  uint8_t *key = (uint8_t *)malloc(len * sizeof(uint8_t));
 
-  for (int i = 0; i < 16; i++)
+  for (int i = 0; i < len; i++)
   {
     plaintext[i] = (uint8_t)s[i];
     key[i] = (uint8_t)k[i];
@@ -60,15 +65,6 @@ int main(void)
 // prints string as hex
 static void phex(uint8_t *str)
 {
-
-#ifdef AES128
-  uint8_t len = 16;
-#elif defined(AES192)
-  uint8_t len = 24;
-#elif defined(AES256)
-  uint8_t len = 32;
-#endif
-
   unsigned char i;
   for (i = 0; i < len; ++i)
     printf("%c", str[i]);
@@ -78,10 +74,10 @@ static void phex(uint8_t *str)
 static void test_ecb_verbose(uint8_t *plaintext, uint8_t *key)
 {
   clock_t start, end;
-  uint8_t buf[16], buf2[16];
+  uint8_t buf[len], buf2[len];
 
-  memset(buf, 0, 16);
-  memset(buf2, 0, 16);
+  memset(buf, 0, len);
+  memset(buf2, 0, len);
 
   printf("ECB encrypt verbose:\n\n");
   start = clock();
@@ -94,7 +90,7 @@ static void test_ecb_verbose(uint8_t *plaintext, uint8_t *key)
   printf("\n");
 
   printf("ciphertext:\n");
-  AES_ECB_encrypt(plaintext, key, buf, 16);
+  AES_ECB_encrypt(plaintext, key, buf, len);
   end = clock();
   phex(buf);
   printf("\nEncryption executing duration: %f\n", ((double)(end - start)) / CLOCKS_PER_SEC);
@@ -112,7 +108,7 @@ static void test_ecb_verbose(uint8_t *plaintext, uint8_t *key)
   printf("\n");
 
   printf("plain text:\n");
-  AES_ECB_decrypt(buf, key, buf2, 16);
+  AES_ECB_decrypt(buf, key, buf2, len);
   phex(buf2);
   end = clock();
   printf("\nDecryption executing duration: %f", ((double)(end - start)) / CLOCKS_PER_SEC);
